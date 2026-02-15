@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="No plans. No pressure. Just see who's around.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Sociall</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow-x: hidden; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #0a0a1a;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: contain;
+  }
+  ::-webkit-scrollbar { width: 0; display: none; }
+
+  /* ---- Ambient ---- */
+  .glow { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+  .glow-1 { top: -120px; right: -100px; width: 320px; height: 320px; background: radial-gradient(circle, rgba(255,107,107,0.1) 0%, transparent 70%); }
+  .glow-2 { bottom: -60px; left: -90px; width: 280px; height: 280px; background: radial-gradient(circle, rgba(126,200,227,0.07) 0%, transparent 70%); }
+  .glow-3 { top: 40%; left: 50%; transform: translate(-50%,-50%); width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,217,61,0.04) 0%, transparent 70%); }
+
+  .app { max-width: 430px; margin: 0 auto; position: relative; z-index: 1; min-height: 100vh; }
+
+  /* ---- Animations ---- */
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
+  @keyframes pulseRing { 0%,100%{transform:scale(1);opacity:.6} 50%{transform:scale(2.5);opacity:0} }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  @keyframes fadeSlide { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+  @keyframes scaleIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+  @keyframes ripple { 0%{transform:scale(0);opacity:1} 100%{transform:scale(4);opacity:0} }
+
+  /* ---- Onboarding ---- */
+  .onboarding {
+    position: fixed; inset: 0; z-index: 3000;
+    background: linear-gradient(180deg, #0a0a1a 0%, #110a20 50%, #0a0a1a 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 32px; text-align: center;
+    animation: fadeIn 0.6s ease;
+    transition: opacity 0.4s, visibility 0.4s;
+  }
+  .onboarding.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  .ob-logo { font-size: 80px; margin-bottom: 28px; animation: float 3s ease-in-out infinite; }
+  .ob-title {
+    font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 800;
+    letter-spacing: -0.03em; margin-bottom: 14px;
+    background: linear-gradient(135deg, #FF6B6B 0%, #FFD93D 50%, #7EC8E3 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .ob-sub { font-size: 17px; color: rgba(255,255,255,0.4); max-width: 260px; line-height: 1.7; margin-bottom: 48px; }
+  .ob-label { font-size: 11px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; margin-bottom: 14px; }
+  .ob-vibes { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 44px; }
+  .ob-vibe-btn {
+    padding: 12px 22px; border-radius: 50px; border: 2px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.5);
+    font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.25s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .ob-vibe-btn.active { border-color: transparent; font-weight: 700; }
+  .ob-enter {
+    padding: 18px 56px; border-radius: 50px; border: none;
+    background: linear-gradient(135deg, #FF6B6B, #FFD93D);
+    color: #000; font-size: 18px; font-weight: 800; cursor: pointer;
+    box-shadow: 0 12px 40px rgba(255,107,107,0.35);
+    font-family: 'DM Sans', sans-serif; letter-spacing: -0.01em;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .ob-enter:active { transform: scale(0.96); }
+
+  /* ---- Install banner ---- */
+  .install-banner {
+    margin: 12px 20px; padding: 14px 18px; border-radius: 18px;
+    background: linear-gradient(135deg, rgba(255,107,107,0.12), rgba(255,217,61,0.08));
+    border: 1px solid rgba(255,107,107,0.18);
+    display: flex; align-items: center; gap: 12px;
+    animation: fadeSlide 0.4s ease;
+  }
+  .install-banner.hidden { display: none; }
+  .install-banner-text { flex: 1; font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.4; }
+  .install-banner-text strong { color: #fff; }
+  .install-btn {
+    padding: 8px 18px; border-radius: 30px; border: none;
+    background: #FF6B6B; color: #fff; font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap;
+  }
+  .install-dismiss { background: none; border: none; color: rgba(255,255,255,0.3); font-size: 18px; cursor: pointer; padding: 4px; }
+
+  /* ---- Header ---- */
+  .header { padding: 24px 22px 0; }
+  .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .header h1 {
+    font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800;
+    letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px;
+  }
+  .time-badge {
+    padding: 6px 14px; border-radius: 50px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07);
+    font-size: 12px; color: rgba(255,255,255,0.35); font-weight: 500;
+  }
+  .header-sub { font-size: 14px; color: rgba(255,255,255,0.35); font-weight: 400; }
+
+  /* ---- My Status ---- */
+  .my-status {
+    margin: 18px 20px; padding: 16px 18px; border-radius: 20px;
+    display: flex; align-items: center; gap: 14px;
+    transition: all 0.3s;
+  }
+  .my-avatar {
+    width: 44px; height: 44px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .my-info { flex: 1; }
+  .my-name { font-size: 14px; font-weight: 700; }
+  .my-sub { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 1px; }
+  .my-badge {
+    padding: 6px 14px; border-radius: 50px; font-size: 10px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+
+  /* ---- Filters ---- */
+  .filters {
+    padding: 0 20px; margin-bottom: 18px;
+    display: flex; gap: 8px; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .filter-btn {
+    padding: 9px 18px; border-radius: 50px; border: none;
+    font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    transition: all 0.25s; font-family: 'DM Sans', sans-serif; font-weight: 500;
+  }
+
+  /* ---- Nearby ---- */
+  .nearby {
+    margin: 0 20px 18px; padding: 13px 16px; border-radius: 16px;
+    background: linear-gradient(135deg, rgba(255,217,61,0.07), rgba(255,107,107,0.05));
+    border: 1px solid rgba(255,217,61,0.1);
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: rgba(255,255,255,0.55);
+  }
+  .nearby strong { color: #FFD93D; font-weight: 700; }
+
+  /* ---- Friend Cards ---- */
+  .friends { padding: 0 20px 140px; display: flex; flex-direction: column; gap: 10px; }
+  .card {
+    background: rgba(255,255,255,0.05); border-radius: 22px;
+    padding: 16px 20px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative; overflow: hidden;
+  }
+  .card.expanded {
+    background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%);
+    border-color: rgba(255,255,255,0.12); padding: 20px 22px;
+  }
+  .card:active { transform: scale(0.985); }
+  .card-accent {
+    position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+    border-radius: 4px 0 0 4px; opacity: 0.9;
+  }
+  .card-row { display: flex; align-items: center; gap: 14px; }
+  .card-avatar {
+    width: 52px; height: 52px; border-radius: 17px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 27px; flex-shrink: 0; position: relative;
+  }
+  .card-info { flex: 1; min-width: 0; }
+  .card-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+  .card-name { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
+  .dot-live {
+    position: relative; width: 8px; height: 8px; display: inline-block;
+  }
+  .dot-live::before, .dot-live::after {
+    content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%;
+  }
+  .dot-live::before { animation: pulse 2s ease-in-out infinite; }
+  .dot-live::after { opacity: 0.5; animation: pulseRing 2s ease-in-out infinite; }
+  .card-tag {
+    font-size: 9px; font-weight: 700; padding: 3px 9px; border-radius: 50px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .card-loc { font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 3px; }
+  .card-mood { font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.35; }
+  .card-time { font-size: 11px; color: rgba(255,255,255,0.28); text-align: right; flex-shrink: 0; }
+
+  .card-actions {
+    margin-top: 16px; padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    display: flex; gap: 10px; animation: fadeSlide 0.25s ease;
+  }
+  .btn-nudge, .btn-link, .btn-busy {
+    flex: 1; padding: 13px 16px; border-radius: 16px; border: none;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .btn-nudge { background: rgba(255,255,255,0.08); color: #fff; }
+  .btn-nudge.done { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); cursor: default; }
+  .btn-link { color: #000; font-weight: 700; }
+  .btn-busy {
+    background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.35);
+    font-weight: 500; cursor: default; text-align: center;
+  }
+
+  /* ---- Modal ---- */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(24px); z-index: 2000;
+    display: flex; align-items: flex-end; justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-bg.hidden { display: none; }
+  .modal-sheet {
+    width: 100%; max-width: 430px;
+    background: linear-gradient(180deg, #1c1c32 0%, #0f0f1a 100%);
+    border-radius: 30px 30px 0 0; padding: 24px 22px calc(env(safe-area-inset-bottom, 16px) + 24px);
+    animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    max-height: 80vh; overflow-y: auto;
+  }
+  .modal-handle { width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.15); margin: 0 auto 22px; }
+  .modal-sheet h3 { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .modal-sub { font-size: 14px; color: rgba(255,255,255,0.45); margin-bottom: 22px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; border-radius: 50px;
+  }
+  .chip .chip-name { font-size: 13px; font-weight: 600; }
+  .chip .chip-x { cursor: pointer; color: rgba(255,255,255,0.35); font-size: 16px; line-height: 1; }
+  .section-label { font-size: 11px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 10px; }
+  .pick-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; border-radius: 16px; cursor: pointer;
+    background: rgba(255,255,255,0.02); border: 1px solid transparent;
+    transition: all 0.2s; margin-bottom: 6px;
+  }
+  .pick-row.on { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12); }
+  .pick-row .pr-emo { font-size: 22px; }
+  .pick-row .pr-info { flex: 1; }
+  .pick-row .pr-name { font-size: 14px; font-weight: 600; }
+  .pick-row .pr-mood { font-size: 12px; color: rgba(255,255,255,0.35); }
+  .pick-check {
+    width: 24px; height: 24px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; transition: all 0.2s;
+  }
+  .modal-textarea {
+    width: 100%; padding: 14px 16px; border-radius: 18px; margin-top: 18px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07);
+    color: #fff; font-size: 14px; font-family: 'DM Sans', sans-serif;
+    resize: none; height: 68px; outline: none; transition: border-color 0.2s;
+  }
+  .modal-textarea:focus { border-color: rgba(255,255,255,0.15); }
+  .modal-btns { display: flex; gap: 10px; margin-top: 18px; }
+  .mb-cancel {
+    flex: 1; padding: 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08);
+    background: transparent; color: rgba(255,255,255,0.5);
+    font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  }
+  .mb-send {
+    flex: 2; padding: 15px; border-radius: 18px; border: none;
+    background: linear-gradient(135deg, #FF6B6B, #FFD93D);
+    color: #000; font-size: 15px; font-weight: 800; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .mb-send:active, .mb-cancel:active { transform: scale(0.97); }
+
+  /* Sent */
+  .sent { text-align: center; padding: 36px 0 12px; animation: scaleIn 0.3s ease; }
+  .sent-emo { font-size: 68px; margin-bottom: 22px; animation: float 2s ease-in-out infinite; }
+  .sent h3 { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .sent .s-count { font-size: 15px; color: rgba(255,255,255,0.45); margin-bottom: 6px; }
+  .sent .s-sub { font-size: 13px; color: rgba(255,255,255,0.25); margin-bottom: 28px; }
+  .sent-faces { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
+  .sent-face {
+    width: 52px; height: 52px; border-radius: 17px; font-size: 26px;
+    display: flex; align-items: center; justify-content: center;
+    animation: scaleIn 0.3s ease backwards;
+  }
+  .sent-face:nth-child(2) { animation-delay: 0.05s; }
+  .sent-face:nth-child(3) { animation-delay: 0.1s; }
+  .sent-face:nth-child(4) { animation-delay: 0.15s; }
+  .sent-back {
+    padding: 15px 44px; border-radius: 18px; border: none;
+    background: rgba(255,255,255,0.08); color: #fff;
+    font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ---- Bottom Nav ---- */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    padding: 10px 18px calc(env(safe-area-inset-bottom, 8px) + 12px);
+    background: linear-gradient(180deg, transparent 0%, #0a0a1a 35%);
+    z-index: 100;
+  }
+  .nav-bar {
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 10px 8px; border-radius: 24px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    background: none; border: none; cursor: pointer; padding: 6px 18px;
+  }
+  .nav-icon { font-size: 21px; }
+  .nav-icon.off { filter: grayscale(1) opacity(0.35); }
+  .nav-label { font-size: 10px; font-weight: 500; letter-spacing: 0.01em; }
+</style>
+</head>
+<body>
+
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="glow glow-3"></div>
+
+<div class="app" id="app"></div>
+
+<script>
+// ── Data ──
+const F = [
+  { id:1, name:"Tania", av:"🧕", loc:"Mom's place", dist:"15 min away", vibe:"chill", mood:"Family time but free later", seen:"20 min ago", open:true },
+  { id:2, name:"Ellie", av:"👩‍🦰", loc:"Liverpool House", dist:"2 min walk", vibe:"social", mood:"Dinner wrapping up soon 🍷", seen:"Just now", open:true },
+  { id:3, name:"Marco", av:"🧔", loc:"Next building over", dist:"30 sec walk", vibe:"chill", mood:"Valentine's dinner at home 🕯️", seen:"5 min ago", open:false },
+  { id:4, name:"Priya", av:"👩", loc:"Next building over", dist:"30 sec walk", vibe:"down", mood:"Movie night, come thru?", seen:"2 min ago", open:true },
+  { id:5, name:"Jordan", av:"🧑", loc:"Liverpool House", dist:"2 min walk", vibe:"social", mood:"Cocktails → what's next?", seen:"Just now", open:true },
+  { id:6, name:"Sam", av:"👨‍🦱", loc:"Home, 3 blocks away", dist:"5 min walk", vibe:"bored", mood:"Scrolling... someone save me", seen:"1 min ago", open:true },
+  { id:7, name:"Léa", av:"👩‍🦱", loc:"Bar Le Mal Nécessaire", dist:"10 min walk", vibe:"social", mood:"Drinks with coworkers, join us!", seen:"8 min ago", open:true },
+  { id:8, name:"Dev", av:"🧑‍💻", loc:"Home", dist:"Same street", vibe:"bored", mood:"Board games anyone? 🎲", seen:"3 min ago", open:true },
+];
+const VC = { bored:"#FF6B6B", chill:"#7EC8E3", social:"#FFD93D", down:"#95E1D3" };
+const VL = { bored:"Save Me", chill:"Low-key", social:"Let's Go", down:"I'm Down" };
+
+// ── State ──
+let S = { ob:true, vibe:"down", filter:"all", exp:null, nudged:new Set(), conn:null, step:"invite", sel:[], msg:"Hey! Wanna link up? 🌀", installDismissed:false };
+let deferredPrompt = null;
+
+// ── PWA Install ──
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; render(); });
+
+function installApp() {
+  if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; render(); }); }
+}
+
+// ── Helpers ──
+const avail = () => F.filter(f => f.open).length;
+const nearby = () => F.filter(f => f.dist.includes("sec") || (f.dist.includes("min") && parseInt(f.dist) <= 5)).length;
+const filtered = () => {
+  let l = S.filter === "all" ? [...F] : F.filter(f => f.vibe === S.filter);
+  return l.sort((a,b) => (b.open?1:0) - (a.open?1:0));
+};
+
+// ── Render ──
+function render() {
+  const app = document.getElementById('app');
+  const now = new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+  const vc = VC[S.vibe];
+  let h = '';
+
+  // Onboarding
+  h += `<div class="onboarding ${S.ob?'':'hidden'}">
+    <div class="ob-logo">🌀</div>
+    <div class="ob-title">Sociall</div>
+    <div class="ob-sub">No plans. No pressure.<br>Just see who's around and go with the flow.</div>
+    <div class="ob-label">What's your vibe right now?</div>
+    <div class="ob-vibes">
+      ${["bored","chill","social","down"].map(v=>`
+        <button class="ob-vibe-btn ${S.vibe===v?'active':''}"
+          style="${S.vibe===v?`background:${VC[v]};color:#000;border-color:${VC[v]}`:''}"
+          onclick="S.vibe='${v}';render()">${VL[v]}</button>`).join('')}
+    </div>
+    <button class="ob-enter" onclick="S.ob=false;render()">See who's around →</button>
+  </div>`;
+
+  // Install banner
+  const showInstall = deferredPrompt && !S.installDismissed && !S.ob;
+  h += `<div class="install-banner ${showInstall?'':'hidden'}">
+    <span style="font-size:24px">📲</span>
+    <div class="install-banner-text"><strong>Install Sociall</strong> on your home screen for the full app experience</div>
+    <button class="install-btn" onclick="installApp()">Install</button>
+    <button class="install-dismiss" onclick="S.installDismissed=true;render()">×</button>
+  </div>`;
+
+  // Header
+  h += `<div class="header">
+    <div class="header-row">
+      <h1>Sociall <span style="font-size:24px">🌀</span></h1>
+      <div class="time-badge">${now}</div>
+    </div>
+    <div class="header-sub">Saturday night · ${avail()} friends available · ${nearby()} nearby</div>
+  </div>`;
+
+  // My status
+  h += `<div class="my-status" style="background:linear-gradient(135deg,${vc}12,${vc}06);border:1px solid ${vc}20">
+    <div class="my-avatar" style="background:${vc}20">😎</div>
+    <div class="my-info">
+      <div class="my-name">You're ${VL[S.vibe].toLowerCase()}</div>
+      <div class="my-sub">Visible to friends nearby</div>
+    </div>
+    <div class="my-badge" style="background:${vc}20;color:${vc}">At home</div>
+  </div>`;
+
+  // Filters
+  const vibes = ["all","bored","chill","social","down"];
+  h += `<div class="filters">${vibes.map(v=>{
+    const on = S.filter===v;
+    const bg = on?(v==="all"?"rgba(255,255,255,0.12)":VC[v]):"rgba(255,255,255,0.04)";
+    const col = on?(v==="all"?"#fff":"#000"):"rgba(255,255,255,0.4)";
+    const cnt = v==="all"?F.length:F.filter(f=>f.vibe===v).length;
+    const label = v==="all"?`Everyone (${cnt})`:`${VL[v]} (${cnt})`;
+    return `<button class="filter-btn" style="background:${bg};color:${col};font-weight:${on?700:500}" onclick="S.filter='${v}';S.exp=null;render()">${label}</button>`;
+  }).join('')}</div>`;
+
+  // Nearby
+  const nc = nearby();
+  if(nc>0) h += `<div class="nearby"><span style="font-size:15px">📍</span><span><strong>${nc} friends</strong> within a 5-minute walk</span></div>`;
+
+  // Cards
+  h += '<div class="friends">';
+  filtered().forEach(f=>{
+    const c = VC[f.vibe]; const ex = S.exp===f.id; const nd = S.nudged.has(f.id);
+    h += `<div class="card ${ex?'expanded':''}" onclick="S.exp=S.exp===${f.id}?null:${f.id};render()">
+      <div class="card-accent" style="background:${c}"></div>
+      <div class="card-row">
+        <div class="card-avatar" style="background:linear-gradient(135deg,${c}20,${c}40);border:2px solid ${c}55">${f.av}</div>
+        <div class="card-info">
+          <div class="card-name-row">
+            <span class="card-name">${f.name}</span>
+            ${f.open?`<span class="dot-live"><style>.dot-live{--dc:${c}}</style></span>`:''}
+            <span class="card-tag" style="background:${c}20;color:${c}">${VL[f.vibe]}</span>
+          </div>
+          <div class="card-loc">${f.loc} · ${f.dist}</div>
+          <div class="card-mood">${f.mood}</div>
+        </div>
+        <div class="card-time">${f.seen}</div>
+      </div>`;
+    if(ex){
+      h += '<div class="card-actions">';
+      if(f.open){
+        h += `<button class="btn-nudge ${nd?'done':''}" onclick="event.stopPropagation();${nd?'':'S.nudged.add('+f.id+');render()'}" ${nd?'disabled':''}>${nd?'👋 Nudged!':'👋 Nudge'}</button>`;
+        h += `<button class="btn-link" style="background:linear-gradient(135deg,${c},${c}CC)" onclick="event.stopPropagation();openConn(${f.id})">Let's Link ✨</button>`;
+      } else {
+        h += '<button class="btn-busy">Busy right now · Check later</button>';
+      }
+      h += '</div>';
+    }
+    h += '</div>';
+  });
+  h += '</div>';
+
+  // Nav
+  h += `<div class="bottom-nav"><div class="nav-bar">
+    ${[{i:"🌀",l:"Sociall",on:true},{i:"💬",l:"Chats",on:false},{i:"📍",l:"Map",on:false},{i:"⚙️",l:"Vibes",on:false}].map(n=>`
+      <button class="nav-item"><span class="nav-icon ${n.on?'':'off'}">${n.i}</span>
+      <span class="nav-label" style="font-weight:${n.on?700:500};color:${n.on?'#fff':'rgba(255,255,255,0.25)'}">${n.l}</span></button>`).join('')}
+  </div></div>`;
+
+  // Modal
+  if(S.conn!==null){
+    const cf = F.find(f=>f.id===S.conn);
+    const others = F.filter(f=>f.id!==cf.id&&f.open);
+    h += `<div class="modal-bg" onclick="closeM()"><div class="modal-sheet" onclick="event.stopPropagation()"><div class="modal-handle"></div>`;
+    if(S.step==="invite"){
+      h += `<h3>Start a Sociall ✨</h3><p class="modal-sub">Invite ${cf.name} and anyone else nearby</p>
+        <div class="chips">${S.sel.map(id=>{const sf=F.find(f=>f.id===id);const sc=VC[sf.vibe];
+          return `<div class="chip" style="background:${sc}18;border:1px solid ${sc}35"><span style="font-size:18px">${sf.av}</span><span class="chip-name">${sf.name}</span>${id!==cf.id?`<span class="chip-x" onclick="toggleSel(${id})">×</span>`:''}</div>`;}).join('')}</div>`;
+      if(others.length){
+        h += '<p class="section-label">Also available nearby</p>';
+        others.forEach(f=>{const on=S.sel.includes(f.id);const fc=VC[f.vibe];
+          h += `<div class="pick-row ${on?'on':''}" onclick="toggleSel(${f.id})"><span class="pr-emo">${f.av}</span><div class="pr-info"><div class="pr-name">${f.name}</div><div class="pr-mood">${f.mood}</div></div><div class="pick-check" style="background:${on?fc:'rgba(255,255,255,0.06)'};color:${on?'#000':'transparent'}">✓</div></div>`;
+        });
+      }
+      h += `<textarea class="modal-textarea" oninput="S.msg=this.value" placeholder="Add a vibe message...">${S.msg}</textarea>
+        <div class="modal-btns"><button class="mb-cancel" onclick="closeM()">Nah</button>
+        <button class="mb-send" onclick="S.step='sent';render()">Send Sociall → ${S.sel.length}</button></div>`;
+    } else {
+      h += `<div class="sent"><div class="sent-emo">🌀</div><h3>Sociall sent!</h3>
+        <p class="s-count">${S.sel.length} friend${S.sel.length===1?'':'s'} notified</p>
+        <p class="s-sub">They'll see your vibe and can hop in ✨</p>
+        <div class="sent-faces">${S.sel.map(id=>{const sf=F.find(f=>f.id===id);const sc=VC[sf.vibe];
+          return `<div class="sent-face" style="background:${sc}18;border:2px solid ${sc}40">${sf.av}</div>`;}).join('')}</div>
+        <button class="sent-back" onclick="closeM()">Back to Sociall</button></div>`;
+    }
+    h += '</div></div>';
+  }
+
+  // Pulsing dot styles (dynamic color)
+  h += `<style>.dot-live::before,.dot-live::after{background:var(--dc,#95E1D3)}</style>`;
+
+  app.innerHTML = h;
+}
+
+function openConn(id){ S.conn=id; S.sel=[id]; S.step="invite"; S.msg="Hey! Wanna link up? 🌀"; render(); }
+function closeM(){ S.conn=null; render(); }
+function toggleSel(id){ const i=S.sel.indexOf(id); if(i>-1)S.sel.splice(i,1);else S.sel.push(id); render(); }
+
+// Register SW
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+
+render();
+</script>
+</body>
+</html>
